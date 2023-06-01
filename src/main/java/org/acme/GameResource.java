@@ -1,15 +1,18 @@
 package org.acme;
 
-import io.quarkus.runtime.Startup;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-import org.acme.PowerResource.Power;
-import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
-import org.eclipse.microprofile.reactive.messaging.OnOverflow;
-import org.jboss.logging.Logger;
-import org.jboss.resteasy.reactive.ResponseHeader;
-import org.jboss.resteasy.reactive.RestStreamElementType;
+import static org.acme.Utils.NAMES;
+import static org.acme.Utils.getNameById;
+import static org.acme.Utils.withPing;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
@@ -20,15 +23,18 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static org.acme.Utils.NAMES;
-import static org.acme.Utils.getNameById;
-import static org.acme.Utils.withPing;
+import org.acme.PowerResource.Power;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
+import org.eclipse.microprofile.reactive.messaging.OnOverflow;
+import org.jboss.logging.Logger;
+import org.jboss.resteasy.reactive.ResponseHeader;
+import org.jboss.resteasy.reactive.RestStreamElementType;
+
+import io.quarkus.runtime.Startup;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
 @Path("game")
@@ -42,6 +48,8 @@ public class GameResource {
     private final Multi<GameEvent> gameEventsIn;
     private final AtomicInteger usersCounter;
     private final Emitter<Power> powerOut;
+
+    private final java.util.Date lastUpdated = new java.util.Date();
 
     static {
         LOG.info("List of names initialized with " + NAMES.size() + " items");
@@ -102,6 +110,25 @@ public class GameResource {
         System.out.println("sending: " + gameEvent);
         gameEventsOut.send(gameEvent);
     }
+
+
+    @GET
+    @Path("hello")
+    public String hello() {
+        Locale locale;
+        DateFormat dateFormat; 
+        String pattern; 
+        SimpleDateFormat simpleDateFormat; 
+        locale = new Locale("en", "US");
+        dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT, locale);
+        // pattern = "dd-M-yyyy hh:mm:ss"; // euro
+        pattern = "M-dd-yyyy hh:mm:ss"; // us
+        simpleDateFormat = new SimpleDateFormat(pattern);
+        String stringLastUpdated = simpleDateFormat.format(lastUpdated);
+        String stringNow = simpleDateFormat.format(new Date());
+
+        return "Aloha " + "updated: " + stringLastUpdated + " now: " + stringNow;
+    }    
 
     public static record User(int id, String name, int team) {
     }
