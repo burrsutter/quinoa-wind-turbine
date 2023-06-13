@@ -127,7 +127,7 @@ public class GameResource {
         String stringLastUpdated = simpleDateFormat.format(lastUpdated);
         String stringNow = simpleDateFormat.format(new Date());
 
-        return "Bonjour Burr " + "updated: " + stringLastUpdated + " now: " + stringNow;
+        return "Hola Burr " + "updated: " + stringLastUpdated + " now: " + stringNow;
     }    
 
     public static record User(int id, String name, int team) {
